@@ -8,16 +8,12 @@ const playerSchema = new Schema({
         ref: "Game",
         required: true
     },
-    guessedSets: [{
+    cardSets: [{
         type: Schema.Types.ObjectId,
         ref: "GuessedSet"
     }],
-    infoGivenSets: [{
-        type: Schema.Types.ObjectId,
-        ref: "InfoGivenSet"
-    }],
-    name: String,
-    user: Boolean
+    name: { type: String, required: true },
+    user: { type: Boolean, required: true }
 })
 
 module.exports = mongoose.model('Player', playerSchema)
