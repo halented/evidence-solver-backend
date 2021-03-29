@@ -21,3 +21,5 @@ const playerSchema = new Schema({
 })
 
 module.exports = mongoose.model('Player', playerSchema)
+
+// the user attribute indicates whether this player is also the person operating the app

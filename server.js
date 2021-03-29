@@ -32,4 +32,5 @@ connection.once('open', () => {
 })
 
 // add routes & usage
-// need custom route for starting a game which populates all cards & players for the game
+const gameRoutes = require('./controllers/game.controller')
+app.use('/games', gameRoutes)
