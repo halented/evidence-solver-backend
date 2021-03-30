@@ -3,6 +3,106 @@ const Player = require('../models/player.model')
 const Card = require('../models/card.model')
 const router = require('express').Router()
 
+const formatNewDeck = (gameId, playerIds) => {
+    const cardDetails = [
+        {
+            group: 1,
+            name: "Colonel Mustard"
+        },
+        {
+            group: 1,
+            name: "Professor Plum"
+        },
+        {
+            group: 1,
+            name: "Mr. Green"
+        },
+        {
+            group: 1,
+            name: "Mrs. Peacock"
+        },
+        {
+            group: 1,
+            name: "Miss Scarlet"
+        },
+        {
+            group: 1,
+            name: "Mrs. White"
+        },
+        {
+            group: 2,
+            name: "Knife"
+        },
+        {
+            group: 2,
+            name: "Candlestick"
+        },
+        {
+            group: 2,
+            name: "Revolver"
+        },
+        {
+            group: 2,
+            name: "Rope"
+        },
+        {
+            group: 2,
+            name: "Lead Pipe"
+        },
+        {
+            group: 2,
+            name: "Wrench"
+        },
+        {
+            group: 3,
+            name: "Hall"
+        },
+        {
+            group: 3,
+            name: "Lounge"
+        },
+        {
+            group: 3,
+            name: "Dining Room"
+        },
+        {
+            group: 3,
+            name: "Kitchen"
+        },
+        {
+            group: 3,
+            name: "Ballroom"
+        },
+        {
+            group: 3,
+            name: "Conservatory"
+        },
+        {
+            group: 3,
+            name: "Billiard Room"
+        },
+        {
+            group: 3,
+            name: "Library"
+        },
+        {
+            group: 3,
+            name: "Study"
+        }
+    ]
+    const cardSchemas = cardDetails.map(card => {
+        return new Card({
+            game: gameId,
+            group: card.group,
+            name: card.name,
+            players: playerIds,
+            solved: false
+        })
+    })
+
+    return cardSchemas
+}
+
 const postNewGame = async (req, res) => {
 
     // post the game itself
@@ -21,23 +121,24 @@ const postNewGame = async (req, res) => {
         }
 
         // create user instance
-        const user = await new Player({ user: true, name: req.body.user, game: savedGame._id })
-        playerIds.push(user._id)
+        const user = new Player({ user: true, name: req.body.user, game: savedGame._id })
+        await user.save()
+        playerIds.push(test._id)
 
-        // add their id's to the game info
+        // create and commit new deck to the database
+        const savedCards = await Card.insertMany(formatNewDeck(savedGame._id, playerIds))
+
+        // add players and cards to game 
         savedGame.players = playerIds
+        savedGame.cards = savedCards.map(card => card._id)
 
-        // save it & server json
+        // save it & serve json
         await savedGame.save()
         return res.json(savedGame)
     }
     else {
         return res.status(400).json(savedGame)
     }
-}
-
-const createPlayers = (players, gameId) => {
-    // create all players here
 }
 
 const getAllGames = (req, res) => {
