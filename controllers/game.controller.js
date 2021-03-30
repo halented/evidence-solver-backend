@@ -1,6 +1,7 @@
 const Game = require('../models/game.model')
 const Player = require('../models/player.model')
 const Card = require('../models/card.model')
+
 const router = require('express').Router()
 
 const formatNewDeck = (gameId, playerIds) => {
@@ -103,27 +104,35 @@ const formatNewDeck = (gameId, playerIds) => {
     return cardSchemas
 }
 
+const createPlayerInstances = async (gameId, players) => {
+    const playerIds = []
+
+    for (player of players) {
+
+        let savedPlayer = await new Player({ user: false, name: player, game: gameId }).save()
+
+        playerIds.push(savedPlayer._id)
+    }
+
+    return playerIds
+}
+
 const postNewGame = async (req, res) => {
 
-    // post the game itself
+    // post the new game instance itself
     const newGame = new Game({ completed: false })
     const savedGame = await newGame.save()
         .catch(err => err)
 
-    // if game successfully posted, post players
+    // if game successfully posted, post players & cards
     if (savedGame._id) {
+
         // create player instances
-        const playerIds = []
-        for (player of req.body.players) {
-            let tempPlayer = new Player({ user: false, name: player, game: savedGame._id })
-            let savedPlayer = await tempPlayer.save()
-            playerIds.push(savedPlayer._id)
-        }
+        const playerIds = await createPlayerInstances(savedGame._id, req.body.players)
 
         // create user instance
-        const user = new Player({ user: true, name: req.body.user, game: savedGame._id })
-        await user.save()
-        playerIds.push(test._id)
+        const user = await new Player({ user: true, name: req.body.user, game: savedGame._id }).save()
+        playerIds.push(user._id)
 
         // create and commit new deck to the database
         const savedCards = await Card.insertMany(formatNewDeck(savedGame._id, playerIds))
